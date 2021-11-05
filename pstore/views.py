@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from rest_framework import status
+from rest_framework import status, generics, filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 # Create your views here.
@@ -30,9 +30,6 @@ class ListCreateProductView(ListCreateAPIView):
             'message': 'Create Product failed'
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, *args, **kwargs):
-        return Product.objects.filter(name__contains=kwargs.get('name'))
-
 
 class ListReviewByProduct(ListCreateAPIView):
     model = Review
@@ -41,3 +38,10 @@ class ListReviewByProduct(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         product = get_object_or_404(Product, id=kwargs.get('pk'))
         return Review.objects.filter(product=product)
+
+
+class ProductSearchView(generics.ListCreateAPIView):
+    search_fields = ['name']
+    filter_backends = (filters.SearchFilter,)
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer

@@ -6,7 +6,7 @@ from pstore.models import Product, Review
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('name', 'type', 'basePrice', 'sale', 'image')
+        fields = '__all__'
 
 
 class ReviewSerializer(serializers.ModelSerializer):

@@ -23,9 +23,8 @@ from authenticate import views as auth_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/products', store_view.ListCreateProductView.as_view()),
+    path('api/v1/products/', store_view.ProductSearchView.as_view()),
     path('api/v1/products/<int:pk>/reviews', store_view.ListReviewByProduct.as_view()),
-    # url(regex=r'^api/v1/products(?\w{1,100})', view=store_view.ListCreateProductView.as_view()),
     path('api/v1/register', view=auth_view.UserRegisterView.as_view()),
     path('api/v1/login', jwt_views.TokenObtainPairView.as_view()),
 ]
