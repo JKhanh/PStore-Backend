@@ -1,0 +1,4 @@
+Django
+Djangorestframework
+Djangorestframework-simplejwt
+gunicorn==20.1.0

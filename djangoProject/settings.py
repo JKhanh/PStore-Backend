@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-iq0ogiv%4hw=qsqyqvdvy7dspje^3p)hh#0wj4p@*ay572ms19
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['194.223.71.33', 'localhost', 'pstore.waoo.ga', 'pstore.ml', '172.17.0.1', 'host.docker.internal']
 
 # Application definition
 
@@ -73,6 +73,11 @@ WSGI_APPLICATION = 'djangoProject.wsgi.application'
 
 AUTH_USER_MODEL = 'authenticate.User'
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50
+}
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -118,7 +123,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./
+    command: gunicorn djangoProject.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - 54321:8000
+    networks:
+      - nginx-manager-network
+
+networks:
+  nginx-manager-network:
+    external:
+      name: nginx-manager_default

@@ -8,16 +8,15 @@ from django.utils import timezone
 
 
 class Product(models.Model):
-    ProductType = (
-        ('PH', 'Phone'),
-        ('AC', 'Accessory'),
-        ('EL', 'Electronic'))
-
+    id = models.CharField(max_length=100, primary_key=True)
     name = models.CharField(max_length=500)
-    type = models.CharField(choices=ProductType, default='PH', max_length=2)
     basePrice = models.FloatField(default=0)
-    sale = models.FloatField(default=0)
+    brand = models.CharField(max_length=500)
+    category = models.CharField(max_length=500)
+    description = models.TextField(max_length=1000)
     image = models.CharField(max_length=1000)
+    rating = models.FloatField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
 
 
 class Customer(models.Model):

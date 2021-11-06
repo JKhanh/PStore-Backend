@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./
+    command: python manage.py runserver
+    volumes:
+      - ./PStore-Backend/:/usr/src/PStore-Backend/
+    ports:
+      - 54321:8000
