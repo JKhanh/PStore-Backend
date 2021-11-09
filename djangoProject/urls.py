@@ -13,18 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.urls import path
-from rest_framework_simplejwt import views as jwt_views
 
 from pstore import views as store_view
-from authenticate import views as auth_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/products/', store_view.ProductSearchView.as_view()),
-    path('api/v1/products/<int:pk>/reviews', store_view.ListReviewByProduct.as_view()),
-    path('api/v1/register', view=auth_view.UserRegisterView.as_view()),
-    path('api/v1/login', jwt_views.TokenObtainPairView.as_view()),
+    path('api/v1', include('pstore.urls')),
+    path('api/v1/', include('authenticate.urls')),
+    path('api/v1/', include('userprofile.urls')),
 ]

@@ -1,4 +1,5 @@
 Django
 Djangorestframework
+Djangorestframework-jwt
 Djangorestframework-simplejwt
 gunicorn==20.1.0

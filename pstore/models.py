@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-
+from authenticate.models import User
 
 # Create your models here.
 from django.utils import timezone
@@ -25,7 +25,6 @@ class Customer(models.Model):
     birthday = models.DateField()
     GENDER_CHOICES = (('M', 'Male'), ('F', 'Female'), ('U', 'Unisex'))
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
-
     phone_number = models.CharField(max_length=17, blank=True)
 
 
@@ -46,7 +45,7 @@ class Order(models.Model):
 
 
 class Cart(models.Model):
-    customer = models.OneToOneField(Customer, on_delete=models.CASCADE, null=True)
+    customer = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
@@ -63,4 +62,5 @@ class ItemOrder(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    price = models.FloatField(default=0)
 

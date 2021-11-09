@@ -1,7 +1,9 @@
 from django.urls import path
 
-from . import views
+from pstore.views import ListCreateProductView, ListReviewByProduct, CartView
 
 urlpatterns = [
-    path('products', views.ListCreateProductView.as_view())
+    path(r'^products', ListCreateProductView.as_view()),
+    path(r'^products/<int:pk>/reviews$', ListReviewByProduct.as_view()),
+    path(r'^cart', CartView.as_view()),
 ]
