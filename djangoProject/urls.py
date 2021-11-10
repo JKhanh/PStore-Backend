@@ -21,7 +21,7 @@ from pstore import views as store_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1', include('pstore.urls')),
+    path('api/v1/', include('pstore.urls')),
     path('api/v1/', include('authenticate.urls')),
     path('api/v1/', include('userprofile.urls')),
 ]
