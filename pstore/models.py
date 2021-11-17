@@ -19,17 +19,8 @@ class Product(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
 
-class Customer(models.Model):
-    firstname = models.CharField(max_length=200)
-    lastname = models.CharField(max_length=100)
-    birthday = models.DateField()
-    GENDER_CHOICES = (('M', 'Male'), ('F', 'Female'), ('U', 'Unisex'))
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
-    phone_number = models.CharField(max_length=17, blank=True)
-
-
 class Review(models.Model):
-    reviewer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rate = models.IntegerField()
     comment = models.CharField(max_length=500)
@@ -37,7 +28,7 @@ class Review(models.Model):
 
 
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
     address = models.CharField(max_length=30)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

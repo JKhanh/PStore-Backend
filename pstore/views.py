@@ -3,14 +3,13 @@ from django.shortcuts import get_object_or_404
 from django.core import serializers
 
 from rest_framework import status, generics, filters
-from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 # Create your views here.
-from pstore.models import Cart, ItemCart, Product, Review
-from pstore.serialize import ProductSerializer, ReviewSerializer, ItemCartsSerializer
+from pstore.models import Cart, ItemCart, ItemOrder, Order, Product, Review
+from pstore.serialize import OrderSerializer, ProductSerializer, ReviewSerializer, ItemCartsSerializer, ItemCartSerializer
+from userprofile.models import UserProfile
 
 
 class ListCreateProductView(ListCreateAPIView):
@@ -86,4 +85,46 @@ class CartView(ListCreateAPIView):
         }, status=status.HTTP_200_OK)
         
 
-    
+class OrderView(ListCreateAPIView):
+    permisstion_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+
+
+    def post(self, request, *args, **kwargs):
+        items = ItemCartSerializer(data=request.data.get('items'), many=True)
+        items.is_valid(raise_exception=True)
+        order = Order.objects.create(customer=request.user)
+        order.save()
+        for item in items.validated_data:
+            orderItem, _ = ItemOrder.objects.update_or_create(
+                order=order, product=item.get['product'], quantity=item.get['quantity'])
+            orderItem.price = orderItem.product.basePrice*orderItem.quantity
+            orderItem.save()
+            order.items.add(orderItem)
+        order.address = UserProfile.objects.get(user=request.user).address
+        order.save()
+        return JsonResponse({
+            'order': OrderSerializer(data=order),
+        }, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        return Order.objects.filter(customer=self.request.user)
+
+
+class PaymentAPIView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def post(self, request, *args, **kwargs):
+        order = Order.objects.get(request.data.get('order_id'))
+        if request.user == order.customer:
+            order.paid = True
+            order.save()
+
+            for itemOrder in order.items.all():
+                item = Cart.objects.get(customer=request.user).items.get(product=itemOrder.product)
+                item.delete()
+
+            return JsonResponse({
+                'message': 'Payment successful'
+            }, status=status.HTTP_201_CREATED)

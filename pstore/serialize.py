@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from pstore.models import ItemCart, Product, Review
+from pstore.models import ItemCart, Order, Product, Review
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -18,8 +18,18 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ItemCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemCart
-        fields = ('product_id', 'product_name', 'product_price', 'product_image', 'quantity')
+        fields = ('product', 'quantity')
+        depth = 1
 
+    def create(self, validated_data):
+        return ItemCart.objects.create(product=Product.objects.get(id=validated_data.get('product_id')))
 
 class ItemCartsSerializer(serializers.Serializer):
     items = ItemCartSerializer(many=True)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Order
+        fields = '__all__'
