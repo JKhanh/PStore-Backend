@@ -78,8 +78,10 @@ class CartView(ListCreateAPIView):
             'product_name': item.product.name,
             'product_image': item.product.image,
             'product_price': item.product.basePrice,
+            'date_created': int(item.date_created.timestamp()),
+            'date_updated': int(item.date_updated.timestamp()),
             'quantity': item.quantity
-        } for item in obj.items.all()]
+        } for item in obj.items.all().order_by('-date_updated')]
         return JsonResponse({
             "items": items
         }, status=status.HTTP_200_OK)

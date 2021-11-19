@@ -47,6 +47,8 @@ class ItemCart(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
 
 class ItemOrder(models.Model):
@@ -54,4 +56,6 @@ class ItemOrder(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price = models.FloatField(default=0)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
