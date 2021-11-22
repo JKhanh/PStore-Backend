@@ -23,7 +23,7 @@ class UserRegisterView(CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
-class UserLoginView(RetrieveAPIView):
+class UserLoginView(CreateAPIView):
     serializer_class = UserLoginSerializer
     permission_classes = (AllowAny,)
 
@@ -31,7 +31,7 @@ class UserLoginView(RetrieveAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         response = {
-            'succcess': 'True',
+            'success': 'True',
             'message': 'Login successful!',
             'status_code': status.HTTP_200_OK,
             'token': serializer.data['token']
