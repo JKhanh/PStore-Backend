@@ -53,11 +53,13 @@ class ProductSearchView(generics.ListCreateAPIView):
 
 class CartView(ListCreateAPIView):
     permisstion_classes = [IsAuthenticated]
-    serializer_class = ItemCartsSerializer
+    serializer_class = ItemCartSerializer
 
     def post(self, request, *args, **kwargs):
+        serializers = ItemCartSerializer(data=request.data)
+        serializers.is_valid(raise_exception=True)
         obj, _ = Cart.objects.get_or_create(customer=request.user)
-        product = get_object_or_404(Product, id=request.data.get('product_id'))
+        product = get_object_or_404(Product, id=serializers.validated_data['product_id'])
         # product.is_valid(raise_exception=True)
         item, itemCreated = ItemCart.objects.update_or_create(
             cart=obj, product=product

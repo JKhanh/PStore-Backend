@@ -15,14 +15,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('reviewer', 'product', 'rate', 'comment')
 
 
-class ItemCartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ItemCart
-        fields = ('product', 'quantity')
-        depth = 1
-
-    def create(self, validated_data):
-        return ItemCart.objects.create(product=Product.objects.get(id=validated_data.get('product_id')))
+class ItemCartSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
 
 class ItemCartsSerializer(serializers.Serializer):
     items = ItemCartSerializer(many=True)
