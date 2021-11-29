@@ -5,6 +5,7 @@ from django.core import serializers
 from rest_framework import status, generics, filters
 from rest_framework.generics import ListCreateAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
 
 # Create your views here.
 from pstore.models import Cart, ItemCart, ItemOrder, Order, Product, Review
@@ -51,7 +52,7 @@ class ProductSearchView(generics.ListCreateAPIView):
     permission_classes = (AllowAny,)
 
 
-class CartView(ListCreateAPIView):
+class CartView(APIView):
     permisstion_classes = [IsAuthenticated]
     serializer_class = ItemCartSerializer
 
@@ -76,6 +77,7 @@ class CartView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         obj, _ = Cart.objects.get_or_create(customer=request.user)
         items = [{
+            'id': item.id,
             'product_id': item.product.id,
             'product_name': item.product.name,
             'product_image': item.product.image,
@@ -87,6 +89,15 @@ class CartView(ListCreateAPIView):
         return JsonResponse({
             "items": items
         }, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        serializers = ItemCartSerializer(data=request.data)
+        serializers.is_valid(raise_exception=True)
+        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['product_id'])
+        itemCart.delete()
+        return JsonResponse({
+            'message': 'Delete item cart successful'
+        }, status=status.HTTP_200_OK)
         
 
 class OrderView(ListCreateAPIView):
@@ -95,7 +106,7 @@ class OrderView(ListCreateAPIView):
 
 
     def post(self, request, *args, **kwargs):
-        items = ItemCartSerializer(data=request.data.get('items'), many=True)
+        items = ItemCartsSerializer(data=request.data.get('items'))
         items.is_valid(raise_exception=True)
         order = Order.objects.create(customer=request.user)
         order.save()
