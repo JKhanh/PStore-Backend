@@ -16,7 +16,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ItemCartSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     product_id = serializers.CharField()
+    quantity = serializers.IntegerField()
 
 class ItemCartsSerializer(serializers.Serializer):
     items = ItemCartSerializer(many=True)

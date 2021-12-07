@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 # Create your views here.
 from pstore.models import Cart, ItemCart, ItemOrder, Order, Product, Review
+from pstore.recommend import Recommend
 from pstore.serialize import OrderSerializer, ProductSerializer, ReviewSerializer, ItemCartsSerializer, ItemCartSerializer
 from userprofile.models import UserProfile
 
@@ -57,11 +58,10 @@ class CartView(APIView):
     serializer_class = ItemCartSerializer
 
     def post(self, request, *args, **kwargs):
-        serializers = ItemCartSerializer(data=request.data)
+        serializers = ItemCartSerializer(data=request.data, partial=True)
         serializers.is_valid(raise_exception=True)
         obj, _ = Cart.objects.get_or_create(customer=request.user)
         product = get_object_or_404(Product, id=serializers.validated_data['product_id'])
-        # product.is_valid(raise_exception=True)
         item, itemCreated = ItemCart.objects.update_or_create(
             cart=obj, product=product
         )
@@ -90,10 +90,20 @@ class CartView(APIView):
             "items": items
         }, status=status.HTTP_200_OK)
 
-    def delete(self, request, *args, **kwargs):
-        serializers = ItemCartSerializer(data=request.data)
+    def put(self, request, *args, **kwargs):
+        serializers = ItemCartSerializer(data=request.data, partial=True)
         serializers.is_valid(raise_exception=True)
-        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['product_id'])
+        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['id'])
+        itemCart.quantity = serializers.validated_data['quantity']
+        itemCart.save()
+        return JsonResponse({
+            'message': 'Update cart successful'
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        serializers = ItemCartSerializer(data=request.data, partial=True)
+        serializers.is_valid(raise_exception=True)
+        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['id'])
         itemCart.delete()
         return JsonResponse({
             'message': 'Delete item cart successful'
