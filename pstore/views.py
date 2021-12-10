@@ -9,35 +9,8 @@ from rest_framework.views import APIView
 
 # Create your views here.
 from pstore.models import Cart, ItemCart, ItemOrder, Order
-from pstore.recommend import Recommend
 from pstore.serialize import OrderSerializer, ItemCartsSerializer, ItemCartSerializer
 from userprofile.models import UserProfile
-
-
-
-    # def get_queryset(self):
-    #     queryset = Product.objects.all()
-    #     filter_value = self.kwargs.get('pk')
-    #     if filter_value is not None:
-    #         queryset = queryset.filter(id=filter_value)
-    #     return queryset
-
-
-# class ListReviewByProduct(ListCreateAPIView):
-#     model = Review
-#     serializer_class = ReviewSerializer
-
-#     def get(self, request, *args, **kwargs):
-#         product = get_object_or_404(Product, id=kwargs.get('pk'))
-#         return Review.objects.filter(product=product)
-
-
-# class ProductSearchView(generics.ListCreateAPIView):
-#     search_fields = ['name']
-#     filter_backends = (filters.SearchFilter,)
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
-#     permission_classes = (AllowAny,)
 
 
 class CartView(APIView):
