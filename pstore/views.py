@@ -1,56 +1,43 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.core import serializers
 
-from rest_framework import status, generics, filters
-from rest_framework.generics import ListCreateAPIView, CreateAPIView
+from rest_framework import status, generics, filters, viewsets
+from rest_framework.generics import ListAPIView, ListCreateAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Create your views here.
-from pstore.models import Cart, ItemCart, ItemOrder, Order, Product, Review
+from pstore.models import Cart, ItemCart, ItemOrder, Order
 from pstore.recommend import Recommend
-from pstore.serialize import OrderSerializer, ProductSerializer, ReviewSerializer, ItemCartsSerializer, ItemCartSerializer
+from pstore.serialize import OrderSerializer, ItemCartsSerializer, ItemCartSerializer
 from userprofile.models import UserProfile
 
 
-class ListCreateProductView(ListCreateAPIView):
-    model = Product
-    serializer_class = ProductSerializer
-    permission_classes = (AllowAny,)
 
-    def get_queryset(self):
-        return Product.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        serializer = ProductSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse({
-                'message': 'Created new Product successful'
-            }, status=status.HTTP_201_CREATED)
-
-        return JsonResponse({
-            'message': 'Create Product failed'
-        }, status=status.HTTP_400_BAD_REQUEST)
+    # def get_queryset(self):
+    #     queryset = Product.objects.all()
+    #     filter_value = self.kwargs.get('pk')
+    #     if filter_value is not None:
+    #         queryset = queryset.filter(id=filter_value)
+    #     return queryset
 
 
-class ListReviewByProduct(ListCreateAPIView):
-    model = Review
-    serializer_class = ReviewSerializer
+# class ListReviewByProduct(ListCreateAPIView):
+#     model = Review
+#     serializer_class = ReviewSerializer
 
-    def get(self, request, *args, **kwargs):
-        product = get_object_or_404(Product, id=kwargs.get('pk'))
-        return Review.objects.filter(product=product)
+#     def get(self, request, *args, **kwargs):
+#         product = get_object_or_404(Product, id=kwargs.get('pk'))
+#         return Review.objects.filter(product=product)
 
 
-class ProductSearchView(generics.ListCreateAPIView):
-    search_fields = ['name']
-    filter_backends = (filters.SearchFilter,)
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = (AllowAny,)
+# class ProductSearchView(generics.ListCreateAPIView):
+#     search_fields = ['name']
+#     filter_backends = (filters.SearchFilter,)
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
+#     permission_classes = (AllowAny,)
 
 
 class CartView(APIView):
