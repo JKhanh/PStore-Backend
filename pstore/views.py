@@ -1,55 +1,16 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.core import serializers
 
-from rest_framework import status, generics, filters
-from rest_framework.generics import ListCreateAPIView, CreateAPIView
+from rest_framework import status, generics, filters, viewsets
+from rest_framework.generics import ListAPIView, ListCreateAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Create your views here.
-from pstore.models import Cart, ItemCart, ItemOrder, Order, Product, Review
-from pstore.serialize import OrderSerializer, ProductSerializer, ReviewSerializer, ItemCartsSerializer, ItemCartSerializer
+from pstore.models import Cart, ItemCart, ItemOrder, Order
+from pstore.serialize import OrderSerializer, ItemCartsSerializer, ItemCartSerializer
 from userprofile.models import UserProfile
-
-
-class ListCreateProductView(ListCreateAPIView):
-    model = Product
-    serializer_class = ProductSerializer
-    permission_classes = (AllowAny,)
-
-    def get_queryset(self):
-        return Product.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        serializer = ProductSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse({
-                'message': 'Created new Product successful'
-            }, status=status.HTTP_201_CREATED)
-
-        return JsonResponse({
-            'message': 'Create Product failed'
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ListReviewByProduct(ListCreateAPIView):
-    model = Review
-    serializer_class = ReviewSerializer
-
-    def get(self, request, *args, **kwargs):
-        product = get_object_or_404(Product, id=kwargs.get('pk'))
-        return Review.objects.filter(product=product)
-
-
-class ProductSearchView(generics.ListCreateAPIView):
-    search_fields = ['name']
-    filter_backends = (filters.SearchFilter,)
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = (AllowAny,)
 
 
 class CartView(APIView):
@@ -57,11 +18,10 @@ class CartView(APIView):
     serializer_class = ItemCartSerializer
 
     def post(self, request, *args, **kwargs):
-        serializers = ItemCartSerializer(data=request.data)
+        serializers = ItemCartSerializer(data=request.data, partial=True)
         serializers.is_valid(raise_exception=True)
         obj, _ = Cart.objects.get_or_create(customer=request.user)
         product = get_object_or_404(Product, id=serializers.validated_data['product_id'])
-        # product.is_valid(raise_exception=True)
         item, itemCreated = ItemCart.objects.update_or_create(
             cart=obj, product=product
         )
@@ -90,10 +50,20 @@ class CartView(APIView):
             "items": items
         }, status=status.HTTP_200_OK)
 
-    def delete(self, request, *args, **kwargs):
-        serializers = ItemCartSerializer(data=request.data)
+    def put(self, request, *args, **kwargs):
+        serializers = ItemCartSerializer(data=request.data, partial=True)
         serializers.is_valid(raise_exception=True)
-        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['product_id'])
+        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['id'])
+        itemCart.quantity = serializers.validated_data['quantity']
+        itemCart.save()
+        return JsonResponse({
+            'message': 'Update cart successful'
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        serializers = ItemCartSerializer(data=request.data, partial=True)
+        serializers.is_valid(raise_exception=True)
+        itemCart = get_object_or_404(ItemCart, id=serializers.validated_data['id'])
         itemCart.delete()
         return JsonResponse({
             'message': 'Delete item cart successful'

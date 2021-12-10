@@ -42,4 +42,5 @@ urlpatterns = [
     path('api/v1/', include('pstore.urls')),
     path('api/v1/', include('authenticate.urls')),
     path('api/v1/', include('userprofile.urls')),
+    path('api/v1/', include('product.urls')),
 ]

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'pstore',
     'authenticate',
+    'product',
     'userprofile',
     'rest_framework',
     'drf_yasg',
