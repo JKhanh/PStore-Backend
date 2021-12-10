@@ -12,6 +12,6 @@ product_detail = ProductViewSet.as_view({
 
 urlpatterns = format_suffix_patterns([
     path(r'products/', product_list, name='product-list'),
-    path(r'products/<int:pk>/', product_detail, name="product-detail"),
+    path(r'products/<str:pk>/', product_detail, name="product-detail"),
 ])
     
