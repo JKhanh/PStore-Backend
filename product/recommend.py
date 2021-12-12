@@ -15,21 +15,24 @@ class Recommend:
         self.items = self.rating_matrix.columns.to_list()
 
     def recommend_by_item(self, item_id):
-        highest_similarity = -np.inf
-        highest_similarity_item = None
+        items = []
+        # highest_similarity = -np.inf
+        # highest_similarity_item = None
         print(self.items[:10])
         item_index = self.items.index(item_id)
         # item_index = 10
-        print(item_index)
+        # print(item_index)
         try:
             item_index = item_index[0]
-
             for col in range(0, self.vh.shape[1]):
+                if col == item_index:
+                    continue
                 similarity = cosine_similarity(self.vh[:,item_index], self.vh[:, col])
-                if similarity > highest_similarity and col != item_index:
-                    highest_similarity = similarity
-                    highest_similarity_item = col
+                items.append((col, similarity))
+                # if similarity > highest_similarity and col != item_index:
+                #     highest_similarity = similarity
+                #     highest_similarity_item = col
 
-            return self.items[highest_similarity_item]
+            return sorted(items, key=lambda x: x[1], reverse=True)[:10]
         except:
             return "Item not found"
