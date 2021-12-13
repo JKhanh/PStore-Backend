@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-iq0ogiv%4hw=qsqyqvdvy7dspje^3p)hh#0wj4p@*ay572ms19'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['194.223.71.33', 'localhost', 'api.pstore.ml', '172.17.0.1', 'host.docker.internal']
 

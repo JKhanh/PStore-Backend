@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from pstore.models import Cart, ItemCart, ItemOrder, Order
 from pstore.serialize import OrderSerializer, ItemCartsSerializer, ItemCartSerializer
 from userprofile.models import UserProfile
+from product.models import Product
 
 
 class CartView(APIView):
@@ -22,11 +23,14 @@ class CartView(APIView):
         serializers.is_valid(raise_exception=True)
         obj, _ = Cart.objects.get_or_create(customer=request.user)
         product = get_object_or_404(Product, id=serializers.validated_data['product_id'])
+        quantity = serializers.validated_data['quantity']
         item, itemCreated = ItemCart.objects.update_or_create(
             cart=obj, product=product
         )
         if itemCreated == False:
-            item.quantity += 1
+            item.quantity += quantity
+        else:
+            item.quantity = quantity
         obj.items.add(item)
         item.save()
         obj.save()
@@ -76,20 +80,25 @@ class OrderView(ListCreateAPIView):
 
 
     def post(self, request, *args, **kwargs):
-        items = ItemCartsSerializer(data=request.data.get('items'))
+        items = ItemCartSerializer(data=request.data, partial=True, many=True)
         items.is_valid(raise_exception=True)
         order = Order.objects.create(customer=request.user)
         order.save()
         for item in items.validated_data:
+            product = get_object_or_404(Product, id=item.get('product_id'))
             orderItem, _ = ItemOrder.objects.update_or_create(
-                order=order, product=item.get['product'], quantity=item.get['quantity'])
+                order=order, product=product, quantity=item.get('quantity'))
             orderItem.price = orderItem.product.basePrice*orderItem.quantity
             orderItem.save()
             order.items.add(orderItem)
+            itemCart = get_object_or_404(ItemCart, id=item.get('id'))
+            itemCart.delete()
         order.address = UserProfile.objects.get(user=request.user).address
         order.save()
+
         return JsonResponse({
-            'order': OrderSerializer(data=order),
+            'message': 'Create order successful',
+            'created_at': order.created,
         }, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
@@ -101,14 +110,11 @@ class PaymentAPIView(CreateAPIView):
     serializer_class = OrderSerializer
 
     def post(self, request, *args, **kwargs):
-        order = Order.objects.get(request.data.get('order_id'))
+        order_id = request.data.get('order_id')
+        order = get_object_or_404(Order, id=order_id)
         if request.user == order.customer:
             order.paid = True
             order.save()
-
-            for itemOrder in order.items.all():
-                item = Cart.objects.get(customer=request.user).items.get(product=itemOrder.product)
-                item.delete()
 
             return JsonResponse({
                 'message': 'Payment successful'

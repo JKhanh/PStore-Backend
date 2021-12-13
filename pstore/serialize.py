@@ -9,7 +9,7 @@ class ItemCartSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
 
 class ItemCartsSerializer(serializers.Serializer):
-    items = ItemCartSerializer(many=True)
+    items = ItemCartSerializer(many=True, partial=True)
 
 
 class OrderSerializer(serializers.ModelSerializer):

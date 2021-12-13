@@ -18,7 +18,6 @@ class Recommend:
         items = []
         # highest_similarity = -np.inf
         # highest_similarity_item = None
-        print(self.items[:10])
         item_index = self.items.index(item_id)
         # item_index = 10
         # print(item_index)
@@ -36,3 +35,7 @@ class Recommend:
             return sorted(items, key=lambda x: x[1], reverse=True)[:10]
         except:
             return "Item not found"
+
+if __name__ == "__main__":
+    rec = Recommend()
+    print(rec.recommend_by_item('B001B39Y6Q'))
