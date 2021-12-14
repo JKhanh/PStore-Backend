@@ -1,6 +1,6 @@
 
   
-#!/bin/sh
+#!/bin/bash
 
 if [ "$DATABASE" = "postgres" ]
 then
