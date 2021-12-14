@@ -153,5 +153,7 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/django
 product/data.pkl
 product/recommended.dat
+.env.dev
+.env.prod
 
 n
