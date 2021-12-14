@@ -8,3 +8,22 @@ services:
       - ./PStore-Backend/:/usr/src/PStore-Backend/
     ports:
       - 54321:8000
+
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+
+volumes:
+  postgres-data:
+    driver: local
+    driver_opts:
+      device: /dev/sdb
+      o: bind
+      type: none
+      force: true
+      bind: /var/lib/postgresql/data
