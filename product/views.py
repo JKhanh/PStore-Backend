@@ -34,11 +34,12 @@ class ProductRecommendView(RetrieveAPIView):
 
     @method_decorator(vary_on_headers("Authorization",))
     def get(self, request, *args, **kwargs):
-        recommended_products = self.recommended.recommend_by_item(kwargs.get('pk'))
+        product = get_object_or_404(Product, id=kwargs['pk'])
+        recommended_products = self.recommended.recommend_by_item(product.image)
         products = []
-        for p in recommended_products:
-            product = get_object_or_404(Product, p)
-            products.append(product)
+        for id, asin in recommended_products:
+            product_rec = get_object_or_404(Product, asin)
+            products.append(product_rec)
         serializer = ProductSerializer(products, many=True)
         return JsonResponse(serializer.data, status=status.HTTP_200_OK)
         

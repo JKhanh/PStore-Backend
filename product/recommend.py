@@ -1,41 +1,96 @@
 import numpy as np
-import pandas as pd
-import os
+import json
+import tensorflow as tf
+from tensorflow._api.v2 import image
+from tensorflow.keras.models import Model
+from annoy import AnnoyIndex
+from PIL import Image
+import requests
+from io import BytesIO
 
+IMAGE_WIDTH = 224
+IMAGE_HEIGHT = 224
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-def cosine_similarity(v, u):
-        return (v @ u) / (np.linalg.norm(v) * np.linalg.norm(u))
+model = None
+feature_extractor = None
+ann_index = []
+ann_metadata = []
+MODEL = 'xception_224x224.h5'
 
-class Recommend:
-    def __init__(self):
-        recommended_path = os.path.join(os.path.dirname(__file__), 'recommended.dat')
-        data_path = os.path.join(os.path.dirname(__file__), 'data.pkl')
-        self.vh = np.load(recommended_path, allow_pickle=True)
-        self.rating_matrix = pd.read_pickle(data_path)
-        self.items = self.rating_matrix.columns.to_list()
+labels = ['Cell_Phones_and_Accessories', 'Clothing_Men', 'Clothing_Women', 'Electronics', 'Home_and_Kitchen', 'Pet_Supplies', 'Shoes', 'Watches']
 
-    def recommend_by_item(self, item_id):
-        items = []
-        # highest_similarity = -np.inf
-        # highest_similarity_item = None
-        item_index = self.items.index(item_id)
-        # item_index = 10
-        # print(item_index)
-        try:
-            item_index = item_index[0]
-            for col in range(0, self.vh.shape[1]):
-                if col == item_index:
-                    continue
-                similarity = cosine_similarity(self.vh[:,item_index], self.vh[:, col])
-                items.append((col, similarity))
-                # if similarity > highest_similarity and col != item_index:
-                #     highest_similarity = similarity
-                #     highest_similarity_item = col
+def load_model():
+    global model, feature_extractor
 
-            return sorted(items, key=lambda x: x[1], reverse=True)[:10]
-        except:
-            return "Item not found"
+    model = tf.keras.models.load_model(MODEL)
+    # print(model.summary())
 
-if __name__ == "__main__":
-    rec = Recommend()
-    print(rec.recommend_by_item('B001B39Y6Q'))
+    layer_name = 'global_average_pooling2d_2'
+    feature_extractor = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+
+def load_ann_index():
+    global ann_index, ann_metadata
+
+    for i in range(len(labels)):
+        ann_index_name = 'index_xception_224x224_adam_batch32_8labels_5000each_10ep_ft16ep_label_{}.ann'.format(i)
+        ann_metadata_name = 'metadata_xception_224x224_adam_batch32_8labels_5000each_10ep_ft16ep_label_{}.json'.format(i)
+        path_ann_index = './data_model/annoy_index/label_separated/' + ann_index_name
+        path_ann_metadata = './data_model/annoy_index/label_separated/' + ann_metadata_name
+
+        with open(path_ann_metadata) as f:
+            ann_metadata_data = json.load(f)
+            ann_metadata.append(ann_metadata_data)
+        
+        ann_index_obj = AnnoyIndex(ann_metadata_data['features_length'], metric='angular')
+        ann_index_obj.load(path_ann_index)
+        ann_index.append(ann_index_obj)
+
+def get_neighbors(label, input, max_neighbors=10):
+    results = []
+
+    ann_index_obj = ann_index[label]
+
+    for item_id in ann_index_obj.get_nns_by_vector(input, max_neighbors, search_k=10):
+        results.append({
+            'id': item_id,
+            'asin': ann_metadata[label]['list_asin'][item_id],
+        })
+    return results
+
+def load_image(url):
+    response = requests.get(url)
+    img = Image.open(BytesIO(response.content))
+    img_array = np.array(img)
+    return img_array
+
+def preprocess_input(x):
+    x = tf.image.resize(x, (IMAGE_WIDTH, IMAGE_HEIGHT))
+    x = (255 - x) / 255.0
+    x = tf.reshape(x, (1, IMAGE_WIDTH, IMAGE_HEIGHT, 3))
+    return x
+
+def recommend(url):
+    global model, feature_extractor, ann_index, ann_metadata
+
+    top_k = ''
+
+    if feature_extractor is None or model is None:
+        load_model()
+
+    if len(ann_index) == 0 or len(ann_metadata) == 0:
+        load_ann_index()
+
+    image_raw = load_image(url)
+    image = preprocess_input(image_raw)
+
+    prediction_probs = model.predict(image)
+    prediction_label = np.argmax(prediction_probs, axis=1)[0]
+
+    input_feature_vector = feature_extractor.predict(image)
+    input_feature_vector = input_feature_vector.flatten()
+    input_feature_vector = input_feature_vector / input_feature_vector.max()
+
+    top_k = get_neighbors(prediction_label, input_feature_vector)
+
+    return top_k
