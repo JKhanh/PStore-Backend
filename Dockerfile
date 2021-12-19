@@ -13,8 +13,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
+# RUN apt-get build-dep python-imaging
 RUN apt-get update \
-    && apt-get install -y postgresql gcc python3-dev musl-dev
+    && apt-get install -y postgresql gcc g++ python3-dev musl-dev libjpeg-dev zlib1g-dev libpng-dev
 
 # lint
 RUN pip install --upgrade pip
@@ -49,7 +50,7 @@ RUN mkdir $APP_HOME/mediafiles
 WORKDIR $APP_HOME
 
 # install dependencies
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev libjpeg-dev zlib1g-dev
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
@@ -69,4 +70,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # run entrypoint.prod.sh
-ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+# ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]

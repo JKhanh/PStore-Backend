@@ -1,12 +1,11 @@
 import numpy as np
 import json
 import tensorflow as tf
-from tensorflow._api.v2 import image
-from tensorflow.keras.models import Model
 from annoy import AnnoyIndex
 from PIL import Image
 import requests
 from io import BytesIO
+import os
 
 IMAGE_WIDTH = 224
 IMAGE_HEIGHT = 224
@@ -16,7 +15,7 @@ model = None
 feature_extractor = None
 ann_index = []
 ann_metadata = []
-MODEL = 'xception_224x224.h5'
+MODEL = os.path.join(os.path.dirname(__file__),'xception_224x224.h5')
 
 labels = ['Cell_Phones_and_Accessories', 'Clothing_Men', 'Clothing_Women', 'Electronics', 'Home_and_Kitchen', 'Pet_Supplies', 'Shoes', 'Watches']
 
@@ -27,7 +26,7 @@ def load_model():
     # print(model.summary())
 
     layer_name = 'global_average_pooling2d_2'
-    feature_extractor = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+    feature_extractor = tf.keras.models.Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
 
 def load_ann_index():
     global ann_index, ann_metadata
@@ -35,8 +34,8 @@ def load_ann_index():
     for i in range(len(labels)):
         ann_index_name = 'index_xception_224x224_adam_batch32_8labels_5000each_10ep_ft16ep_label_{}.ann'.format(i)
         ann_metadata_name = 'metadata_xception_224x224_adam_batch32_8labels_5000each_10ep_ft16ep_label_{}.json'.format(i)
-        path_ann_index = './data_model/annoy_index/label_separated/' + ann_index_name
-        path_ann_metadata = './data_model/annoy_index/label_separated/' + ann_metadata_name
+        path_ann_index = os.path.join(os.path.dirname(__file__),'./data_model/annoy_index/label_separated/' + ann_index_name)
+        path_ann_metadata = os.path.join(os.path.dirname(__file__),'./data_model/annoy_index/label_separated/' + ann_metadata_name)
 
         with open(path_ann_metadata) as f:
             ann_metadata_data = json.load(f)
