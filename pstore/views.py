@@ -98,6 +98,7 @@ class OrderView(ListCreateAPIView):
 
         return JsonResponse({
             'message': 'Create order successful',
+            'order_id': order.id,
             'created_at': order.created,
         }, status=status.HTTP_201_CREATED)
 
